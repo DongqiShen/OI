@@ -8,52 +8,85 @@
 #include <queue>
 #include <stack>
 #include <limits.h>
+#include <unordered_set>
 
 using namespace std;
 
+typedef struct Trie{
+    vector<Trie*> next;
+    string word;
+    Trie(){
+        next.resize(26);
+        word = "";
+    }
+
+};
+
 class Solution
 {
+private:
+    unordered_set<string> strs;
+    vector<vector<int>> path = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
 public:
-    int search(vector<int> &nums, int target)
+    void insert(Trie* trie, string word){
+        int n = word.size();
+        for(int i = 0; i < n; ++i){
+            int ch = word[i] - 'a';
+            if(trie->next[ch] == nullptr){
+                Trie *node = new Trie();
+                trie->next[ch] = node;
+            }
+            trie = trie->next[ch];
+        }
+        trie->word = word;
+    }
+    void dfs(vector<vector<char>>& board, int i, int j, Trie* trie, vector<vector<int>>& visited){
+        int n = board.size();
+        int m = board[0].size();
+        int ch = board[i][j] - 'a';
+        if(trie == nullptr){
+            return;
+        }
+        if(trie->next[ch] != nullptr && !trie->word.empty()){
+            strs.insert(trie->word);
+        }
+        for(int k = 0; k < 4; ++k){
+            int x = i + path[i][0];
+            int y = j + path[i][1];
+            if(x >= 0 && x < n && y >= 0 && y < m && !visited[x][y]){
+                visited[x][y] = 1;
+                dfs(board, x, y, trie->next[ch], visited);
+                visited[x][y] = 0;
+            }
+        }
+    }
+    vector<string> findWords(vector<vector<char>> &board, vector<string> &words)
     {
-        // 第一个二分法寻找旋转的点的坐标
-        int n = nums.size();
-        int left = 0, right = n;
-        while (left < right){
-            int mid = left + ((right - left) >> 1);
-            if (nums[mid] >= nums[0]){
-                left = mid + 1;
-            }else{
-                right = mid;
+        Trie *trie = new Trie();
+        int n_words = words.size();
+        for(int i = 0; i < n_words; ++i){
+            insert(trie, words[i]);
+        }
+        int n = board.size();
+        int m = board[0].size();
+        vector<vector<int>> visited(n, vector<int>(m, 0));
+        visited[0][0] = 1;
+        for(int i = 0; i < n; ++i){
+            for(int j = 0; j < m; ++j){
+                vector<vector<int>> visited(n, vector<int>(m, 0));
+                visited[i][j] = 1;
+                dfs(board, i, j, trie, visited);
             }
         }
-        // 根据target的大小，选择它所在范围的原数组的坐标
-        if (target >= nums[0]){
-            left = 0;
-        }else{
-            right = n;
-        }
-        // 第二个二分，比较明确，在升序的数组找目标值
-        while (left < right){
-            int mid = left + ((right - left) >> 1);
-            if (nums[mid] == target){
-                return mid;
-            }else if (nums[mid] > target){
-                right = mid;
-            }else{
-                left = mid + 1;
-            }
-        }
-        return ((left < n) && (nums[left] == target)) ? left : -1;
+        
+        vector<string> ans(strs.begin(), strs.end());
+        return ans;
     }
 };
 
-
 int main()
 {
-    Solution solution;
-    vector<int> nums = {3, 1};
-    int target = 1;
-    int ret = solution.search(nums, target);
+    Solution solutuon;
+    //vector<vector<char>> board = {["o", "a", "a", "n"], [ "e", "t", "a", "e" ], [ "i", "h", "k", "r" ], [ "i", "f", "l", "v" ]};
     return 0;
 }
