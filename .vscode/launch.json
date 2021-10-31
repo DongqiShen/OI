@@ -10,7 +10,7 @@
             "name": "lldb - Build and debug active file",
             "program": "${fileDirname}/${fileBasenameNoExtension}",
             "args": [],
-            //"cwd": "${workspaceFolder}",
+            // "cwd": "${workspaceFolder}",
             "cwd": "${fileDirname}",
             "preLaunchTask": "clang++ build active file"
         },
