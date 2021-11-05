@@ -23,75 +23,44 @@ using namespace std;
 
 class Solution {
 private:
-    unordered_set<string> rawans;
-    int maxlen = 0;
+    vector<string> ans;
 public:
-    void backtrack(string s, int idx, string cur, int leftcount, int left, int right){
-        if(idx == s.size()){
-            if(leftcount == 0){
-                rawans.insert(cur);
-                maxlen = max(int(cur.size()), maxlen);
+    void backtrack(string num, int idx, long long prev, long long cur, int target, string exp){
+        if(idx == num.size()){
+            if(cur == target){
+                ans.emplace_back(exp);
             }
             return;
         }
-        if (left < 0 || right < 0 || (left + right) > (s.size() - idx)) {
-            return;
-        }
-        char ch = s[idx];
-        if(ch != '(' && ch != ')'){
-            cur.push_back(ch);
-            backtrack(s, idx+1, cur, leftcount, left, right);
-        }else if(ch == '('){
-            cur.push_back(ch);
-            backtrack(s, idx+1, cur, leftcount+1, left, right);
-            cur.pop_back();
-            backtrack(s, idx+1, cur, leftcount, left-1, right);
-        }else if(ch == ')'){
-            if(leftcount > 0){
-                cur.push_back(ch);
-                backtrack(s, idx+1, cur, leftcount-1, left, right);
-                cur.pop_back();
+        string strNum = "";
+        for(int i = idx; i < num.size(); ++i){
+            if(num[idx] == '0' && i > idx){
+                break;
             }
-            backtrack(s, idx+1, cur, leftcount, left, right-1);
+            strNum.push_back(num[i]);
+            long long intNum = stoull(strNum);
+            if(idx == 0){
+                backtrack(num, i + 1, intNum, intNum, target, exp + strNum);
+            }else{
+                backtrack(num, i + 1, intNum, cur + intNum, target, exp + "+" + strNum);
+                backtrack(num, i + 1, -intNum, cur - intNum, target, exp + "-" + strNum);
+                long long tmp = prev * intNum;
+                backtrack(num, i + 1, tmp, (cur-prev) + tmp, target, exp + "*" + strNum);
+            }
         }
     }
-    vector<string> removeInvalidParentheses(string s)
+    vector<string> addOperators(string num, int target)
     {
-        int n = s.size();
-        int left = 0;
-        int right = 0;
-        for(int i = 0; i < n; ++i){
-            if(s[i] == '('){
-                left++;
-            }else if(s[i] == ')'){
-                if(left > 0){
-                    left--;
-                }else{
-                    right++;
-                }
-            }
-        }
-        vector<string> ans;
-        string cur = "";
-        int leftcount = 0;
-        backtrack(s, 0, cur, leftcount, left, right);
-        if (rawans.empty()) {
-            ans.emplace_back("");
-            return ans;
-        }
-        for(auto str: rawans){
-            if(str.size() == maxlen){
-                ans.emplace_back(str);
-            }
-        }
+        string exp = "";
+        backtrack(num, 0, 0, 0, target, exp);
         return ans;
     }
 };
-
 int main()
 {
     Solution solution;
-    string s = "((((((((((((((((((((aaaaa";
-    vector<string> ans = solution.removeInvalidParentheses(s);
+    string num = "123";
+    int target = 6;
+    vector<string> ans = solution.addOperators(num, target);
     return 0;
 }
