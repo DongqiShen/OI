@@ -21,38 +21,49 @@
 
 using namespace std;
 
+struct TreeNode {
+    int val;
+    TreeNode *left;
+    TreeNode *right;
+    TreeNode() : val(0), left(nullptr), right(nullptr) {}
+    TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+    TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+};
+
+
 class Solution {
-private:
-    int MAX = 2002;
 public:
-    int minCut(string s)
+    void recoverTree(TreeNode* root)
     {
-        int n = s.size();
-        vector<vector<int>> dp(n, vector<int>(n, 1));
-        for(int i = n - 1; i >= 0; --i){
-            for(int j = i + 1; j < n; ++j){
-                dp[i][j] = (s[i] == s[j]) && dp[i+1][j-1];
+        stack<TreeNode*> stk;
+        TreeNode* x = nullptr;
+        TreeNode* y = nullptr;
+        TreeNode* pred = nullptr;
+
+        while (!stk.empty() || root != nullptr) {
+            while (root != nullptr) {
+                stk.push(root);
+                root = root->left;
             }
-        }
-        vector<int> f(n, 2002);
-        for(int i = 0; i < n; ++i){
-            if(dp[0][i]){
-                f[i] = 0;
-            }else{
-                for(int j = 0; j < i; ++j){
-                    if(dp[j+1][i]){
-                        f[i] = min(f[i], f[j] + 1);
-                    }
+            root = stk.top();
+            stk.pop();
+            if (pred != nullptr && root->val < pred->val) {
+                y = root;
+                if (x == nullptr) {
+                    x = pred;
+                } else {
+                    break;
                 }
             }
+            pred = root;
+            root = root->right;
         }
-        return f[n-1];
+        swap(x->val, y->val);
     }
 };
 
+
 int main()
 {
-    Solution solution;
-    string s = "aab";
     return 0;
 }
