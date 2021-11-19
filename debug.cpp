@@ -21,49 +21,45 @@
 
 using namespace std;
 
-struct TreeNode {
-    int val;
-    TreeNode *left;
-    TreeNode *right;
-    TreeNode() : val(0), left(nullptr), right(nullptr) {}
-    TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
-    TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
-};
-
 
 class Solution {
 public:
-    void recoverTree(TreeNode* root)
-    {
-        stack<TreeNode*> stk;
-        TreeNode* x = nullptr;
-        TreeNode* y = nullptr;
-        TreeNode* pred = nullptr;
-
-        while (!stk.empty() || root != nullptr) {
-            while (root != nullptr) {
-                stk.push(root);
-                root = root->left;
+    vector<vector<int>> threeSum(vector<int>& nums) {
+        int n = nums.size();
+        sort(nums.begin(), nums.end());
+        vector<vector<int>> ans;
+        for (int i = 0; i < n; ++i) {
+            if (i > 0 && nums[i-1] == nums[i]) {
+                continue;
             }
-            root = stk.top();
-            stk.pop();
-            if (pred != nullptr && root->val < pred->val) {
-                y = root;
-                if (x == nullptr) {
-                    x = pred;
-                } else {
+            int last = n - 1;
+            int target = -nums[i];
+            for (int j = i + 1; j < n; ++j) {
+                if (j > i + 1 && nums[j-1] == nums[j]) {
+                    continue;
+                }
+
+                while (j < last && nums[j] + nums[last] > target) {
+                    last--;
+                }
+                if (j == last) {
                     break;
                 }
+
+                if (nums[j] + nums[last] == target) {
+                    ans.push_back({nums[i], nums[j], nums[last]});
+                }
             }
-            pred = root;
-            root = root->right;
         }
-        swap(x->val, y->val);
+        return ans;
     }
 };
 
 
 int main()
 {
+    Solution solution;
+    vector<int> nums = {-1, 0, 1, 2, -1, -4};
+    vector<vector<int>> ans = solution.threeSum(nums);
     return 0;
 }
