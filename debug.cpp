@@ -21,45 +21,28 @@
 
 using namespace std;
 
-
 class Solution {
 public:
-    vector<vector<int>> threeSum(vector<int>& nums) {
-        int n = nums.size();
+    int findLHS(vector<int>& nums)
+    {
         sort(nums.begin(), nums.end());
-        vector<vector<int>> ans;
-        for (int i = 0; i < n; ++i) {
-            if (i > 0 && nums[i-1] == nums[i]) {
-                continue;
+        int begin = 0;
+        int maxLen = 0;
+        int n = nums.size();
+        for (int end = 0; end < n; ++end) {
+            while (nums[end] - nums[begin] > 1) {
+                begin++;
             }
-            int last = n - 1;
-            int target = -nums[i];
-            for (int j = i + 1; j < n; ++j) {
-                if (j > i + 1 && nums[j-1] == nums[j]) {
-                    continue;
-                }
-
-                while (j < last && nums[j] + nums[last] > target) {
-                    last--;
-                }
-                if (j == last) {
-                    break;
-                }
-
-                if (nums[j] + nums[last] == target) {
-                    ans.push_back({nums[i], nums[j], nums[last]});
-                }
+            if (nums[end] - nums[begin] == 1){
+                maxLen = max(maxLen, end - begin + 1);
             }
         }
-        return ans;
+        return maxLen;
     }
 };
-
 
 int main()
 {
     Solution solution;
-    vector<int> nums = {-1, 0, 1, 2, -1, -4};
-    vector<vector<int>> ans = solution.threeSum(nums);
     return 0;
 }
