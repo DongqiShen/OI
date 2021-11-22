@@ -21,28 +21,57 @@
 
 using namespace std;
 
+class BIT {
+private:
+    int n;
+    vector<int> tree;
+public:
+    static int lowbit(int x) {
+        return x & (-x);
+    }
+
+    BIT(int _n) : n(_n), tree(_n + 1) {}
+
+    int query(int x) {
+        int ans = 0;
+        while (x) {
+            ans += tree[x];
+            x -= lowbit(x);
+        }
+        return ans;
+    }
+
+    void update(int x) {
+        while (x <= n) {
+            tree[x] += 1;
+            x += lowbit(x);
+        }
+    }
+};
 class Solution {
 public:
-    int findLHS(vector<int>& nums)
+    int reversePairs(vector<int>& nums)
     {
-        sort(nums.begin(), nums.end());
-        int begin = 0;
-        int maxLen = 0;
         int n = nums.size();
-        for (int end = 0; end < n; ++end) {
-            while (nums[end] - nums[begin] > 1) {
-                begin++;
-            }
-            if (nums[end] - nums[begin] == 1){
-                maxLen = max(maxLen, end - begin + 1);
-            }
+        vector<int> tmp = nums;
+        sort(tmp.begin(), tmp.end());
+        for (int &num : nums) {
+            num = lower_bound(tmp.begin(), tmp.end(), num) - tmp.begin() + 1;
         }
-        return maxLen;
+        BIT bit(n);
+        int ans = 0;
+        for (int i = n - 1; i >= 0; --i) {
+            ans += bit.query(nums[i] - 1);
+            bit.update(nums[i]);
+        }
+        return ans;
     }
 };
 
 int main()
 {
     Solution solution;
+    vector<int> nums = {7, 5, 6, 4};
+    int ans = solution.reversePairs(nums);
     return 0;
 }
