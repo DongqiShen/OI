@@ -21,50 +21,21 @@
 
 using namespace std;
 
-class BIT {
-private:
-    int n;
-    vector<int> tree;
-public:
-    static int lowbit(int x) {
-        return x & (-x);
-    }
-
-    BIT(int _n) : n(_n), tree(_n + 1) {}
-
-    int query(int x) {
-        int ans = 0;
-        while (x) {
-            ans += tree[x];
-            x -= lowbit(x);
-        }
-        return ans;
-    }
-
-    void update(int x) {
-        while (x <= n) {
-            tree[x] += 1;
-            x += lowbit(x);
-        }
-    }
-};
 class Solution {
 public:
-    int reversePairs(vector<int>& nums)
+    int maxProfit(vector<int>& prices)
     {
-        int n = nums.size();
-        vector<int> tmp = nums;
-        sort(tmp.begin(), tmp.end());
-        for (int &num : nums) {
-            num = lower_bound(tmp.begin(), tmp.end(), num) - tmp.begin() + 1;
+        int n = prices.size();
+        vector<vector<vector<int>>> dp(n, vector<vector<int>>(3, vector<int>(2, 0)));
+        dp[0][1][1] = -prices[0];
+        dp[0][2][1] = -prices[0];
+        for (int i = 1; i < n; ++i) {
+            dp[i][1][0] = max(dp[i-1][1][1] + prices[i], dp[i-1][1][0]);
+            dp[i][1][1] = max(-prices[i], dp[i-1][1][1]);
+            dp[i][2][0] = max(dp[i-1][2][1] + prices[i], dp[i-1][2][0]);
+            dp[i][2][1] = max(dp[i-1][1][0] - prices[i], dp[i-1][2][1]);
         }
-        BIT bit(n);
-        int ans = 0;
-        for (int i = n - 1; i >= 0; --i) {
-            ans += bit.query(nums[i] - 1);
-            bit.update(nums[i]);
-        }
-        return ans;
+        return dp[n-1][2][0];
     }
 };
 
@@ -72,6 +43,5 @@ int main()
 {
     Solution solution;
     vector<int> nums = {7, 5, 6, 4};
-    int ans = solution.reversePairs(nums);
     return 0;
 }
