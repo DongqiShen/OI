@@ -23,25 +23,40 @@ using namespace std;
 
 class Solution {
 public:
-    int maxProfit(vector<int>& prices)
+    vector<int> maxSlidingWindow(vector<int>& nums, int k)
     {
-        int n = prices.size();
-        vector<vector<vector<int>>> dp(n, vector<vector<int>>(3, vector<int>(2, 0)));
-        dp[0][1][1] = -prices[0];
-        dp[0][2][1] = -prices[0];
-        for (int i = 1; i < n; ++i) {
-            dp[i][1][0] = max(dp[i-1][1][1] + prices[i], dp[i-1][1][0]);
-            dp[i][1][1] = max(-prices[i], dp[i-1][1][1]);
-            dp[i][2][0] = max(dp[i-1][2][1] + prices[i], dp[i-1][2][0]);
-            dp[i][2][1] = max(dp[i-1][1][0] - prices[i], dp[i-1][2][1]);
+        int n = nums.size();
+        vector<int> ans;
+        if (n == 0) {
+            return ans;
         }
-        return dp[n-1][2][0];
+        deque<int> dq;
+        for (int i = 0; i < k; ++i) {
+            while(!dq.empty() && nums[i] > nums[dq.back()]) {
+                dq.pop_back();
+            }
+            dq.push_back(i);
+        }
+        ans.push_back(nums[dq.front()]);
+        for (int i = k; i < n; ++i) {
+            while (!dq.empty() && nums[i] > nums[dq.back()]) {
+                dq.pop_back();
+            }
+            dq.push_back(i);
+            while (dq.front() <= i - k) {
+                dq.pop_front();
+            }
+            ans.push_back(nums[dq.front()]);
+        }
+        return ans;
     }
 };
 
 int main()
 {
     Solution solution;
-    vector<int> nums = {7, 5, 6, 4};
+    vector<int> nums = {1, 3, 1, 2, 0, 5};
+    int k = 3;
+    vector<int> ans = solution.maxSlidingWindow(nums, k);
     return 0;
 }
