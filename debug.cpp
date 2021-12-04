@@ -21,55 +21,51 @@
 
 using namespace std;
 
-struct cmp {
-    bool operator()(const pair<int, vector<int>> &a, const pair<int, vector<int>> &b) {
-        return a.first > b.first;
+bool cmp(vector<int> &a, vector<int> &b)
+{
+    if (a[0] != b[0]) {
+        return a[0] < b[0];
     }
-};
-
+    return a[1] < b[1];
+}
 class Solution {
 public:
-    int kthSmallest(vector<vector<int>>& mat, int k)
+    vector<vector<int>> reconstructQueue(vector<vector<int>>& people)
     {
-        int n = mat.size();
-        int m = mat[0].size();
-        vector<int> idxArr(n, 0);
-        priority_queue<pair<int, vector<int>>,  vector<pair<int, vector<int>>>, cmp> pq;
-        set<vector<int>> seen;
-        seen.insert(idxArr);
-        int tmpSum = 0;
+        sort(people.begin(), people.end());
+        int n = people.size();
+        vector<vector<int>> ans(n);
+        vector<int> idxs(n, -1);
         for (int i = 0; i < n; ++i) {
-            tmpSum += mat[i][0];
-        }
-        pq.emplace(tmpSum, idxArr);
-        while (k > 1) {
-            k--;
-            auto [curSum, idxs] = pq.top();
-            pq.pop();
-            for (int i = 0; i < n; ++i) {
-                if (idxs[i] + 1 > m - 1) {
-                    continue;
+            int empty = 0;
+            int equal = 0;
+            int k = people[i][1];
+            int j = 0;
+            while (empty + equal < k) {
+                if (idxs[j] == -1) {
+                    empty += 1;
                 }
-                idxs[i] += 1;
-                if (seen.count(idxs)) {
-                    idxs[i] -= 1;
-                    continue;
+                if (idxs[j] != -1 && people[i][0] == people[idxs[j]][0]) {
+                    equal += 1;
                 }
-                int newSum = curSum - mat[i][idxs[i]-1] + mat[i][idxs[i]];
-                pq.emplace(newSum, idxs);
-                seen.insert(idxs);
-                idxs[i] -= 1;
+                j++;
             }
+            while (idxs[j] != -1) {
+                j += 1;
+            }
+            idxs[j] = i;
         }
-        return pq.top().first;
+        for (int i = 0; i < n; ++i) {
+            ans[i] = people[idxs[i]];
+        }
+        return ans;
     }
 };
 
 int main()
 {
     Solution solution;
-    vector<vector<int>> mat = {{1, 3, 11}, {2, 4, 6}};
-    int k = 5;
-    int ans = solution.kthSmallest(mat, k);
+    vector<vector<int>> people = {{7, 0}, {4, 4}, {7, 1}, {5, 0}, {6, 1}, {5, 2}};
+    vector<vector<int>> ans = solution.reconstructQueue(people);
     cout << "Hello world";
 }
