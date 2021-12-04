@@ -21,42 +21,55 @@
 
 using namespace std;
 
+struct cmp {
+    bool operator()(const pair<int, vector<int>> &a, const pair<int, vector<int>> &b) {
+        return a.first > b.first;
+    }
+};
+
 class Solution {
 public:
-    vector<int> maxSlidingWindow(vector<int>& nums, int k)
+    int kthSmallest(vector<vector<int>>& mat, int k)
     {
-        int n = nums.size();
-        vector<int> ans;
-        if (n == 0) {
-            return ans;
+        int n = mat.size();
+        int m = mat[0].size();
+        vector<int> idxArr(n, 0);
+        priority_queue<pair<int, vector<int>>,  vector<pair<int, vector<int>>>, cmp> pq;
+        set<vector<int>> seen;
+        seen.insert(idxArr);
+        int tmpSum = 0;
+        for (int i = 0; i < n; ++i) {
+            tmpSum += mat[i][0];
         }
-        deque<int> dq;
-        for (int i = 0; i < k; ++i) {
-            while(!dq.empty() && nums[i] > nums[dq.back()]) {
-                dq.pop_back();
+        pq.emplace(tmpSum, idxArr);
+        while (k > 1) {
+            k--;
+            auto [curSum, idxs] = pq.top();
+            pq.pop();
+            for (int i = 0; i < n; ++i) {
+                if (idxs[i] + 1 > m - 1) {
+                    continue;
+                }
+                idxs[i] += 1;
+                if (seen.count(idxs)) {
+                    idxs[i] -= 1;
+                    continue;
+                }
+                int newSum = curSum - mat[i][idxs[i]-1] + mat[i][idxs[i]];
+                pq.emplace(newSum, idxs);
+                seen.insert(idxs);
+                idxs[i] -= 1;
             }
-            dq.push_back(i);
         }
-        ans.push_back(nums[dq.front()]);
-        for (int i = k; i < n; ++i) {
-            while (!dq.empty() && nums[i] > nums[dq.back()]) {
-                dq.pop_back();
-            }
-            dq.push_back(i);
-            while (dq.front() <= i - k) {
-                dq.pop_front();
-            }
-            ans.push_back(nums[dq.front()]);
-        }
-        return ans;
+        return pq.top().first;
     }
 };
 
 int main()
 {
     Solution solution;
-    vector<int> nums = {1, 3, 1, 2, 0, 5};
-    int k = 3;
-    vector<int> ans = solution.maxSlidingWindow(nums, k);
-    return 0;
+    vector<vector<int>> mat = {{1, 3, 11}, {2, 4, 6}};
+    int k = 5;
+    int ans = solution.kthSmallest(mat, k);
+    cout << "Hello world";
 }
