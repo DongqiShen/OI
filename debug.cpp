@@ -21,43 +21,34 @@
 
 using namespace std;
 
-bool cmp(vector<int> &a, vector<int> &b)
-{
-    if (a[0] != b[0]) {
-        return a[0] < b[0];
-    }
-    return a[1] < b[1];
-}
 class Solution {
 public:
-    vector<vector<int>> reconstructQueue(vector<vector<int>>& people)
+    void dfs(vector<vector<int>> &graph, vector<int> &quiet, vector<int> &ans, int x) {
+        if (ans[x] != -1) {
+            return;
+        }
+        ans[x] = x;
+        for (auto &rich : graph[x]) {
+            dfs(graph, quiet, ans, rich);
+            if (quiet[ans[rich]] <= quiet[ans[x]]) {
+                ans[x] = ans[rich];
+            }
+        }
+    }
+    vector<int> loudAndRich(vector<vector<int>>& richer, vector<int>& quiet)
     {
-        sort(people.begin(), people.end());
-        int n = people.size();
-        vector<vector<int>> ans(n);
-        vector<int> idxs(n, -1);
-        for (int i = 0; i < n; ++i) {
-            int empty = 0;
-            int equal = 0;
-            int k = people[i][1];
-            int j = 0;
-            while (empty + equal < k) {
-                if (idxs[j] == -1) {
-                    empty += 1;
-                }
-                if (idxs[j] != -1 && people[i][0] == people[idxs[j]][0]) {
-                    equal += 1;
-                }
-                j++;
-            }
-            while (idxs[j] != -1) {
-                j += 1;
-            }
-            idxs[j] = i;
+        int n = quiet.size();
+        vector<vector<int>> graph(n);
+        for (int i = 0; i < richer.size(); ++i) {
+            int poor = richer[i][1];
+            int rich = richer[i][0];
+            graph[poor].emplace_back(rich);
         }
+        vector<int> ans(n, -1);
         for (int i = 0; i < n; ++i) {
-            ans[i] = people[idxs[i]];
+            dfs(graph, quiet, ans, i);
         }
+
         return ans;
     }
 };
@@ -65,7 +56,6 @@ public:
 int main()
 {
     Solution solution;
-    vector<vector<int>> people = {{7, 0}, {4, 4}, {7, 1}, {5, 0}, {6, 1}, {5, 2}};
-    vector<vector<int>> ans = solution.reconstructQueue(people);
+
     cout << "Hello world";
 }
