@@ -21,41 +21,65 @@
 
 using namespace std;
 
-class Solution {
-public:
-    void dfs(vector<vector<int>> &graph, vector<int> &quiet, vector<int> &ans, int x) {
-        if (ans[x] != -1) {
-            return;
-        }
-        ans[x] = x;
-        for (auto &rich : graph[x]) {
-            dfs(graph, quiet, ans, rich);
-            if (quiet[ans[rich]] <= quiet[ans[x]]) {
-                ans[x] = ans[rich];
-            }
-        }
-    }
-    vector<int> loudAndRich(vector<vector<int>>& richer, vector<int>& quiet)
-    {
-        int n = quiet.size();
-        vector<vector<int>> graph(n);
-        for (int i = 0; i < richer.size(); ++i) {
-            int poor = richer[i][1];
-            int rich = richer[i][0];
-            graph[poor].emplace_back(rich);
-        }
-        vector<int> ans(n, -1);
-        for (int i = 0; i < n; ++i) {
-            dfs(graph, quiet, ans, i);
-        }
+using ll = long long int;
 
-        return ans;
+vector<ll> tree;
+int n;
+
+int lowbit(int x) {
+    return x & -x;
+}
+
+ll query(ll x) {
+    ll ans = 0;
+    while(x > 0) {
+        ans += tree[x];
+        x -= lowbit(x);
     }
-};
+    return ans;
+}
+
+void add(ll x, ll k) {
+    while (x <= n) {
+        tree[x] += k;
+        x += lowbit(x);
+    }
+}
+
+void add_range(ll l, ll r, ll k) {
+    add(l, k);
+    add(r + 1, -k);
+}
 
 int main()
 {
-    Solution solution;
-
-    cout << "Hello world";
+    int _n, q;
+    cin>>_n>>q;
+    n = _n + 1;
+    tree.assign(n, 0);
+    vector<int> arr(n);
+    for (int i = 1; i < n; ++i) {
+        cin>>arr[i];
+    }
+    for (int i = 1; i < n; ++i) {
+        int diff = arr[i] - arr[i-1];
+        add(i, diff);
+    }
+    int l, r, x, type;
+    vector<ll> ans;
+    for (int i = 0; i < q; ++i) {
+        cin>>type;
+        if (type == 1) {
+            cin>>l>>r>>x;
+            add_range(l, r, x);
+        } else if (type == 2) {
+            cin>>x;
+            ll rtn = query(x);
+            ans.emplace_back(rtn);
+        }
+    }
+    for (int i = 0; i < ans.size(); ++i) {
+        cout<<ans[i]<<"\n";
+    }
+    return 0;
 }
