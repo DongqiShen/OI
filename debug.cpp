@@ -23,41 +23,54 @@ using namespace std;
 
 class Solution {
 private:
-    const int INF = 0x3f3f3f3f;
+    const int MOD = 1e9 + 7;
+    vector<vector<int>> path = {{0, 1}, {0, -1}, {-1, 0}, {1, 0}};
 public:
-    int findCheapestPrice(int n, vector<vector<int>>& flights, int src, int dst, int k)
+    int findPaths(int m, int n, int maxMove, int startRow, int startColumn)
     {
-        int m = flights.size();
-        vector<int> dist(n, INF);
-        dist[src] = 0;
-        vector<vector<int>> graph(n, vector<int>(n, INF));
+        if (maxMove == 0) {
+            return 0;
+        }
+        vector<vector<vector<int>>> dp(m, vector<vector<int>>(n, vector<int>(maxMove + 1, 0)));
+        // 初始化
         for (int i = 0; i < m; ++i) {
-            int from = flights[i][0];
-            int to = flights[i][1];
-            int weight = flights[i][2];
-            graph[from][to] = weight;
+            dp[i][0][1] += 1;
+            dp[i][n-1][1] += 1;
         }
-        for (int i = 0; i <= k; ++i) {
-            vector<int> dist_clone(dist.begin(), dist.end());
-            for (int j = 0; j < m; ++j) {
-                int from = flights[j][0];
-                int to = flights[j][1];
-                int weight = flights[j][2];
-                dist[to] = min(dist[to], graph[from][to] + dist_clone[from]);
+        for (int j = 0; j < n; ++j) {
+            dp[0][j][1] += 1;
+            dp[m-1][j][1] += 1;
+        }
+        for (int move = 1; move <= maxMove; ++move) {
+            for (int i = 0; i < m; ++i) {
+                for (int j = 0; j < n; ++j) {
+                    for (auto &dir: path) {
+                        int x = i + dir[0];
+                        int y = j + dir[1];
+                        if (x >= 0 && x < m && y >= 0 && y < n) {
+                            dp[i][j][move] = (dp[i][j][move] % MOD + dp[x][y][move-1] % MOD) % MOD;
+                        }
+                    }
+                }
             }
+        
         }
-        return dist[dst] == INF ? -1 : dist[dst];
+        int ans = 0;
+        for (int step = 1; step <= maxMove; ++step) {
+            ans = (ans % MOD + dp[startRow][startColumn][step] % MOD) % MOD;
+        }
+        return ans;
     }
 };
 
 int main()
 {
     Solution solution;
-    int n = 3;
-    vector<vector<int>> flights = {{0, 1, 100}, {1, 2, 100}, {0, 2, 500}};
-    int src = 0;
-    int dst = 2;
-    int k = 1;
-    int ans = solution.findCheapestPrice(n, flights, src, dst, k);
+    int m = 2;
+    int n = 2;
+    int maxMove = 2;
+    int startRow = 0;
+    int startColumn = 0;
+    int ans = solution.findPaths(m, n, maxMove, startRow, startColumn);
     return 0;
 }
