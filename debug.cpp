@@ -22,55 +22,57 @@
 using namespace std;
 
 class Solution {
-private:
-    const int MOD = 1e9 + 7;
-    vector<vector<int>> path = {{0, 1}, {0, -1}, {-1, 0}, {1, 0}};
 public:
-    int findPaths(int m, int n, int maxMove, int startRow, int startColumn)
+    vector<int> diffWaysToCompute(string expression)
     {
-        if (maxMove == 0) {
-            return 0;
+        int n = expression.size();
+        vector<char> ops;
+        vector<int> nums;
+        string str = "";
+        for (int i = 0; i < n; ++i) {
+            char ch = expression[i];
+            if (isdigit(ch)) {
+                str += ch;
+            } else {
+                nums.emplace_back(stoi(str));
+                ops.emplace_back(ch);
+                str.clear();
+            }
         }
-        vector<vector<vector<int>>> dp(m, vector<vector<int>>(n, vector<int>(maxMove + 1, 0)));
-        // 初始化
-        for (int i = 0; i < m; ++i) {
-            dp[i][0][1] += 1;
-            dp[i][n-1][1] += 1;
+        nums.emplace_back(stoi(str));
+        n = nums.size();
+        vector<vector<vector<int>>> dp(n, vector<vector<int>>(n));
+        for (int i = 0; i < n; ++i) {
+            dp[i][i].emplace_back(nums[i]);
         }
-        for (int j = 0; j < n; ++j) {
-            dp[0][j][1] += 1;
-            dp[m-1][j][1] += 1;
-        }
-        for (int move = 1; move <= maxMove; ++move) {
-            for (int i = 0; i < m; ++i) {
-                for (int j = 0; j < n; ++j) {
-                    for (auto &dir: path) {
-                        int x = i + dir[0];
-                        int y = j + dir[1];
-                        if (x >= 0 && x < m && y >= 0 && y < n) {
-                            dp[i][j][move] = (dp[i][j][move] % MOD + dp[x][y][move-1] % MOD) % MOD;
+        for (int l = 1; l <= n; ++l) { // 区间长度
+            for (int i = 0; i + l - 1 < n; ++i) { // i：区间起点
+                int j = i + l - 1; // j：区间终点
+                for (int k = i; k < j; ++k) { // k：区间中点
+                    for (auto &left: dp[i][k]) { // left: 左区间可能的值
+                        for (auto &right: dp[k+1][j]) { // right: 右区间可能的值
+                            int result = 0;
+                            if (ops[k] == '+') {
+                                result = left + right;
+                            } else if (ops[k] == '-') {
+                                result = left - right;
+                            } else if (ops[k] == '*') {
+                                result = left * right;
+                            }
+                            dp[i][j].emplace_back(result);
                         }
                     }
                 }
             }
-        
         }
-        int ans = 0;
-        for (int step = 1; step <= maxMove; ++step) {
-            ans = (ans % MOD + dp[startRow][startColumn][step] % MOD) % MOD;
-        }
-        return ans;
+        return dp[0][n-1];
     }
 };
 
 int main()
 {
     Solution solution;
-    int m = 2;
-    int n = 2;
-    int maxMove = 2;
-    int startRow = 0;
-    int startColumn = 0;
-    int ans = solution.findPaths(m, n, maxMove, startRow, startColumn);
+    string expression = "2-1-1";
+    vector<int> ans = solution.diffWaysToCompute(expression);
     return 0;
 }
