@@ -25,53 +25,38 @@
 
 using namespace std;
 
-
-struct ListNode {
-    int val;
-    ListNode *next;
-    ListNode() : val(0), next(nullptr) {}
-    ListNode(int x) : val(x), next(nullptr) {}
-    ListNode(int x, ListNode *next) : val(x), next(next) {}
-};
-
 class Solution {
 public:
-    ListNode *reverseList(ListNode *head) {
-        ListNode *left = nullptr;
-        while (head != nullptr) {
-            ListNode *next = head->next;
-            head->next = left;
-            left = head;
-            head = next;
-        }
-        return left;
-    }
-    ListNode* reverseKGroup(ListNode* head, int k)
+    vector<int> platesBetweenCandles(string s, vector<vector<int>>& queries)
     {
-        ListNode *dummyNode = new ListNode(0);
-        dummyNode->next = head;
-        ListNode *prev = dummyNode;
-        bool flag = true;
-        while (flag) {
-            ListNode *ptr = prev;
-            for (int i = 0; i < k; ++i) {
-                if (ptr->next == nullptr) {
-                    flag = false;
-                    break;
-                }
-                ptr = ptr->next;
+        int n = s.size();
+        vector<int> presum(n + 1, 0);
+        for (int i = 1; i <= n; ++i) {
+            presum[i] = presum[i - 1] + (s[i - 1] == '|' ? 1 : 0);
+        }
+        vector<int> ans;
+        for (auto &query: queries) {
+            int l = query[0];
+            int r = query[1];
+            int leftIndex, rightIndex;
+            if (s[l] == '|') {
+                leftIndex = l;
+            } else {
+                leftIndex = upper_bound(presum.begin(), presum.end(), presum[l + 1]) - presum.begin();
             }
-            if (flag) {
-                ListNode *next = ptr->next;
-                ptr->next = nullptr;
-                prev->next = reverseList(prev->next);
-                while(prev->next != nullptr) {
-                    prev = prev->next;
-                }
-                prev->next = next;
+            if (s[r] == '|') {
+                rightIndex = r;
+            } else {
+                rightIndex =  lower_bound(presum.begin(), presum.end(), presum[r + 1]) - presum.begin();
+            }
+            if (leftIndex < rightIndex && rightIndex != n + 1 && leftIndex != n + 1) {
+                int tmpAns = rightIndex - leftIndex - (presum[rightIndex] - presum[leftIndex]);
+                ans.emplace_back(tmpAns);
+            } else {
+                ans.emplace_back(0);
             }
         }
-        return dummyNode->next;
+        return ans;
     }
 };
 
@@ -81,16 +66,8 @@ int main()
     // ifstream fin(input);
     // vector<vector<int>> vec = to_vvi(fin);
     Solution solution;
-    ListNode one(1);
-    ListNode two(2);
-    ListNode three(3);
-    ListNode four(4);
-    ListNode five(5);
-    one.next = &two;
-    two.next = &three;
-    three.next = &four;
-    four.next = &five;
-    five.next = nullptr;
-    ListNode *ans = solution.reverseKGroup(&one, 3);
+    string s = "***|**|*****|**||**|*";
+    vector<vector<int>> queries = {{1, 17}, {4, 5}, {14, 17}, {5, 11}, {15, 16}};
+    vector<int> ans = solution.platesBetweenCandles(s, queries);
     return 0;
 }
